@@ -1,29 +1,29 @@
 # let's send slack message using WebHooks API
 
-# airflow stuff
+# import airflow stuff
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-# request-response stuff
+# import http stuff
 import requests, json
 
-# date stuff
+# import date stuff
 from datetime import datetime, timedelta
 
-# static constants as keys
+# define static constants
 WEBHOOK_URL_KEY = 'ANZOR_BOT_WEBHOOK_URL'
 SLACK_MESSAGE_KEY = 'SLACK_MESSAGE'
 SCHEDULE_INTERVAL_KEY = 'SCHEDULE_INTERVAL'
 VARIABLE_FILENAME = 'airflow_variables'
 
-# data storage dictionary
-AIRFLOW_VARIABLES = Variable.get(VARIABLE_FILENAME, deserialize_json=True)
+# retrieve Airflow Variables and store them in a python dict (from json)
+airflow_variables = Variable.get(VARIABLE_FILENAME, deserialize_json=True)
 
-# values from dict
-WEBHOOK_URL = AIRFLOW_VARIABLES[WEBHOOK_URL_KEY]
-SLACK_MESSAGE = AIRFLOW_VARIABLES[SLACK_MESSAGE_KEY]  # will be formatted later
-SCHEDULE_INTERVAL = AIRFLOW_VARIABLES[SCHEDULE_INTERVAL_KEY]
+# retrieve an each airflow variable by its associated key from 'airflow_variables' dict
+webhook_url = airflow_variables[WEBHOOK_URL_KEY]
+slack_message = airflow_variables[SLACK_MESSAGE_KEY]  # message will be formatted later
+schedule_interval = airflow_variables[SCHEDULE_INTERVAL_KEY]
 
 # today's date
 now = datetime.now()
@@ -38,22 +38,22 @@ default_args = {
     'email_on_retry': False,
 }
 
-# DAG
+# dag
 dag = DAG(
     'Slack_DAG',
     default_args=default_args,
     catchup=False,
     description='My first slack DAG',
-    schedule_interval=timedelta(seconds=SCHEDULE_INTERVAL),
+    schedule_interval=timedelta(seconds=schedule_interval),
 )
 
 
 # send configurable slack message
 def send_slack_message():
     today = str(datetime.today().strftime('%Y-%m-%d-%H:%M:%S'))
-    text_message = str(SLACK_MESSAGE).format(today)
+    text_message = str(slack_message).format(today)
     json_payload = json.dumps({'text': text_message})
-    response = requests.post(WEBHOOK_URL,
+    response = requests.post(webhook_url,
                              data=json_payload)
     print(response.text)  # should print OK if status.code == 200 => means everything is ok
 
