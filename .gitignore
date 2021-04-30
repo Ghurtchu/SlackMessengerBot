@@ -136,7 +136,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-
-/airflow_configs
-
-/airflow-configs/airflow_variables.json
