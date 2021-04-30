@@ -57,6 +57,7 @@ def send_slack_message():
                              data=json_payload)
     print(response.text)  # should print OK if status.code == 200 => means everything is ok
 
+
 # create task
 task = PythonOperator(
     task_id='send_slack_message',
